@@ -16,15 +16,28 @@ elif [[ $OSTYPE =~ "cygwin" ]]; then
 	windows="true";
 fi
 
+# Checking which shell is used
+printf "Checking which shell is being used...\n";
+# zsh is default on MacOS Catalina and beyond. bash_profile should be default on any previous versions. User may have manually changed their shell. 
+if [[ "$SHELL" == "/bin/zsh" ]]; then
+	profilefile="~/.zshrc";
+	printf "Your shell is \"%s\" and your profile is \"%s\"\n" "$SHELL" "$profilefile"
+elif [[ "$SHELL" == "/bin/bash" ]]; then
+	profilefile="~/.bash_profile";
+	printf "Your shell is \"%s\" and your profile is \"%s\"\n" "$SHELL" "$profilefile"
+else
+	printf "%s is not bash or zsh, cannot add alias due to not being able to correctly determine profile file.\nYou will need to manually add an alias in your profile file.\n" "$SHELL"
+	profilefile="";
+fi
 
 printf "Checking if jq is installed.\n"
 jqpath="$(which jq)";
-
+brewpath="$(which brew)";
 # Detecting if jq is installed, if it's not we need to install it either using brew on Mac. 
-if [[ ! -f $jqpath ]]; then 
+if [[ ! -f "$jqpath" ]]; then 
 	if [[ $macos ]]; then
 		printf "Checking if brew is installed...\n"
-		if [[ ! -f /usr/local/bin/brew ]]; then
+		if [[ ! -f "$brewpath" ]]; then
 			printf "You don't have brew installed. If you want to install it, enter y for Yes and n for No.\n";
 			read -r answer;
 			if [[ $answer == [Yy] ]]; then
@@ -48,12 +61,17 @@ fi
 printf "Downloading application files...\n"
 curl -sL -O --output-dir ~/Downloads/ "https://raw.githubusercontent.com/dasbuilder/local-log-parser/master/local-log-parser.sh"; 
 
-printf "Installing the parser\n";
+printf "Installing the program...\n";
 chmod +x ~/Downloads/local-log-parser.sh && sudo mv -v ~/Downloads/local-log-parser.sh /usr/local/bin/local-log-parser.sh
 
-printf "Now you need to set up an alias. Run either of the following to add an alias to your shell profile, or add one manually.\nIf running zsh, run %s\n\
-Otherwise, run %s\n" \
-\""echo alias lp='/usr/local/bin/local-log-parser.sh' >> ~/.zshrc\";" \""echo alias lp='/usr/local/bin/local-log-parser.sh' >> ~/.bash_profile\";"
+if [[ -z "$profilefile" ]]; then
+	printf "Could not automatically determine which profile you are using. Please manually set an alias in your profile file. Your shell type is: %s\n" "$SHELL"
+else
+	echo "lp='/usr/local/bin/local-log-parser.sh'" >> "$profilefile";
+	printf "\nAn alias has been created for you called %s in your %s\n" '"lp"' "$profilefile";
+	printf "If you would like to change this, edit your %s manually.\n" "$profilefile"
+  printf "Please run %s to reload your profile to use your new alias.\n" "source $profilefile"
+fi; 
 
 printf "\nTo use the program, run %s or use your preferred alias.\nE.g. 'lp local-lightning.log'\n" "'./usr/local/bin/local-log-parser.sh local-lightning.log'"
 printf "\nIf you experience issues, please fill out an issue on my github page here: %s\n\nThanks and enjoy!" "https://github.com/dasbuilder/local-log-parser/issues"
