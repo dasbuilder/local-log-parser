@@ -3,8 +3,10 @@
 # https://github.com/dasbuilder/local-log-parser
 
 # Check if required applications are present on the system script is running on
-printf "Welcome to the Local Log Parser install script.\n \
-This only works for Linux, WSL (Linux on Windows), Mac and CygWin.\n"
+printf "\n\tWelcome to the Local Log Parser install script.\n"
+printf "This only works for Linux, WSL (Linux on Windows), Mac and CygWin.\n\n"
+echo; 
+echo;
 
 if [[ $OSTYPE =~ "darwin"* ]]; then
 	macos="true";
@@ -17,10 +19,9 @@ elif [[ $OSTYPE =~ "cygwin" ]]; then
 fi
 
 # Checking which shell is used
-printf "Checking which shell is being used...\n";
+printf "Checking the default shell...\n";
 # zsh is default on MacOS Catalina and beyond. bash_profile should be default on any previous versions. User may have manually changed their shell. 
-if [[ "$SHELL" == "/bin/zsh" ]]; then
-	
+if [[ "$SHELL" == "/bin/zsh" ]]; then	
 	profilefile="${HOME}/.zshrc";
 	printf "Your shell is \"%s\" and your profile is \"%s\"\n" "$SHELL" "$profilefile"
 elif [[ "$SHELL" == "/bin/bash" ]]; then
@@ -30,37 +31,46 @@ else
 	printf "%s is not bash or zsh, cannot add alias due to not being able to correctly determine profile file.\nYou will need to manually add an alias in your profile file.\n" "$SHELL"
 	profilefile="";
 fi
-
+# jq check
 printf "Checking if jq is installed.\n"
 jqpath="$(which jq)";
 brewpath="$(which brew)";
 # Detecting if jq is installed, if it's not we need to install it either using brew on Mac. 
-if [[ ! -f "$jqpath" ]]; then 
+if [[ ! -f "$jqpath" ]]; then
+	printf "\njq isn't installed. Let's install it...\n" 
+	
 	if [[ $macos ]]; then
-		printf "Checking if brew is installed...\n"
+		printf "MacOSX or MacOS detected...let's see if brew is available\n"
+		# Checking if brew is installed or not
 		if [[ ! -f "$brewpath" ]]; then
 			printf "You don't have brew installed. If you want to install it, enter y for Yes and n for No.\n";
 			read -r answer;
-			if [[ $answer == [Yy] ]]; then
-				printf "Installing brew...\n"; 
-				/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && 
-				printf "Installing jq now with 'brew install jq'\n" && 
-				/usr/local/bin/brew install jq;
-			else
-				printf "You opted to skip installing brew.\nInstalling jq manually...\n"
-			fi
-			# Installing jq manually
-			printf "Downloading jq executable...\n";
-			curl -sLO --output-dir ~/Downloads/ https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64 && 
-			printf "Installing\n" && 
-			/bin/bash ~/Downloads/jq-osx-amd64
-		fi
-	fi
+				if [[ $answer == [Yy] ]]; then
+					printf "Installing brew...\n"; 
+					/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && 
+					printf "Installing jq now with 'brew install jq'\n" && 
+					/usr/local/bin/brew install jq;
+				else
+					printf "You opted to skip installing brew.\nInstalling jq manually...\n"
+				fi
+				# Installing jq manually
+				printf "Downloading jq executable...\n";
+				curl -sLO --output-dir ~/Downloads/ https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64 && 
+				printf "Installing\n" && 
+				/bin/bash ~/Downloads/jq-osx-amd64
+		else
+			printf "Installing jq now with 'brew install jq'\n" && 
+			/usr/local/bin/brew install jq;
+		fi	# End of brew check if block
+	fi # End of OS check if block
+else # Else for jqpath if block
+	printf "\njq and brew are already installed. We should have everything we need.\n"
 fi
 
-# With that installed, we need to download application files
+# With jq installed, we need to download the application files
 printf "Downloading application files...\n"
 curl -sL -O --output-dir ~/Downloads/ "https://raw.githubusercontent.com/dasbuilder/local-log-parser/master/local-log-parser.sh"; 
+sleep 2;
 
 printf "Installing the program...\n";
 chmod +x ~/Downloads/local-log-parser.sh && sudo mv -v ~/Downloads/local-log-parser.sh /usr/local/bin/local-log-parser.sh
@@ -76,3 +86,5 @@ fi;
 
 printf "\nTo use the program, run %s or use your preferred alias.\nE.g. 'lp local-lightning.log'\n" "'./usr/local/bin/local-log-parser.sh local-lightning.log'"
 printf "\nIf you experience issues, please fill out an issue on my github page here: %s\n\nThanks and enjoy!" "https://github.com/dasbuilder/local-log-parser/issues"
+
+
