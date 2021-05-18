@@ -20,10 +20,11 @@ fi
 printf "Checking which shell is being used...\n";
 # zsh is default on MacOS Catalina and beyond. bash_profile should be default on any previous versions. User may have manually changed their shell. 
 if [[ "$SHELL" == "/bin/zsh" ]]; then
-	profilefile="~/.zshrc";
+	
+	profilefile="${HOME}/.zshrc";
 	printf "Your shell is \"%s\" and your profile is \"%s\"\n" "$SHELL" "$profilefile"
 elif [[ "$SHELL" == "/bin/bash" ]]; then
-	profilefile="~/.bash_profile";
+	profilefile="${HOME}/.bash_profile";
 	printf "Your shell is \"%s\" and your profile is \"%s\"\n" "$SHELL" "$profilefile"
 else
 	printf "%s is not bash or zsh, cannot add alias due to not being able to correctly determine profile file.\nYou will need to manually add an alias in your profile file.\n" "$SHELL"
