@@ -32,4 +32,4 @@
 
 ### Issues
 
-- Please fill out an issue [here] (https://github.com/dasbuilder/local-log-parser/issues) and be as detailed as possible, including screenshots and/or error output. 
+- Please fill out an issue [here](https://github.com/dasbuilder/local-log-parser/issues) and be as detailed as possible, including screenshots and/or error output. 
